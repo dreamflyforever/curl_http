@@ -11,7 +11,7 @@
 #define ERROR_CURL_HTTPFALSE -3
 #define ERROR_CURL_SSLINITFAILED -4
 #define ERROR_FAILED_SEND -5
-#define HEAD_KEEP 1
+#define HEAD_KEEP 0
 #define PCM_FILE "/home/jim/test/spotify/goertek/python/TomCruise.pcm"
 
 typedef size_t (*func)(void *buffer, size_t size, size_t nmemb, char *userp);
