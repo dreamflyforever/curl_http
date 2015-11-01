@@ -11,15 +11,17 @@
 #define ERROR_CURL_HTTPFALSE -3
 #define ERROR_CURL_SSLINITFAILED -4
 #define ERROR_FAILED_SEND -5
-#define HEAD_KEEP 0
-#define pcm_file "/home/jim/test/spotify/goertek/python/TomCruise.pcm"
+#define HEAD_KEEP 1
+#define PCM_FILE "/home/jim/test/spotify/goertek/python/TomCruise.pcm"
+
+typedef size_t (*func)(void *buffer, size_t size, size_t nmemb, char *userp);
 
 /*buffer is curl_wasy_setopt(,,wr_buf), for keep data*/
-size_t load_date( void *buffer, size_t size, size_t nmemb, char *userp ) 
+size_t load_data( void *buffer, size_t size, size_t nmemb, char *userp ) 
 {
 	int  wr_index = 0; 
 
-	size_t segsize = size * nmemb; 
+	size_t segsize = size * nmemb;
 
 	if ( wr_index + segsize > MAX_BUF ) { 
 
@@ -36,18 +38,29 @@ size_t load_date( void *buffer, size_t size, size_t nmemb, char *userp )
 
 	/* null terminate the buffer */ 
 	userp[wr_index] = 0;
-
-	printf("%s",userp);
+#if 0
+	printf(">>%s", userp);
+#endif
+	char *tran = strstr(userp, "transcriptions");
+	if (tran == NULL) {
+		return 0;
+	} else {
+		int i = 0;
+		char bf[4096] = {0};
+		for (i = 17;  tran[i] != ']'; i++) {
+			bf[i-17] = tran[i];
+		}
+		printf(">>%s\n", bf);
+	}
 
 	/* return the number of bytes received, indicating to curl that all is okay */ 
 	return segsize; 
-
 } 
 
 /*-----------------------------------------------------------------------------
- *func:receive the header date from the server and save it to the file stream
+ *func:receive the header data from the server and save it to the file stream
  *
- *@param stream :the temp file used to save the header date receive from the server
+ *@param stream :the temp file used to save the header data receive from the server
  *
  *return the size of the string receive
   *---------------------------------------------------------------------------*/
@@ -64,7 +77,8 @@ int send_https(const char *url,
 		const char *poststring,
 		unsigned long timeout,
 		char * wr_buf,
-		int len)
+		int len,
+		func callback)
 {
 	CURLcode ret;
 	int error_code=SUCEED_OK;
@@ -88,10 +102,10 @@ int send_https(const char *url,
 	/*set timetou to connect server*/
 	curl_easy_setopt(curl,CURLOPT_CONNECTTIMEOUT, timeout);
 
-	/*wr_buf is the param for load_data function to keep data*/ 
+	/*wr_buf is the param for callback function to keep data*/ 
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, wr_buf); 
 	/*callback for receive data from server*/
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, load_date);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback);
 #if HEAD_KEEP
 	static const char *headerfilename = "head.out";  
 	FILE *headerfile;
@@ -205,7 +219,7 @@ int memncpy(char *dst, char *src, int dst_position, int src_len)
 	return 0;
 }
 
-int main()
+int post(char *pcm_file, func callback)
 {
 	char wr_buf[MAX_BUF] = {0};
 	char buf[MAX_BUF] = {0};
@@ -265,6 +279,18 @@ int main()
 	memset(buf, 0, MAX_BUF);
 	sprintf(buf, "boundary=%s\r\n\r\n", boundary);
 	headers = curl_slist_append(headers, buf);
-	send_https("https://goertek-ncs-engusa-ssl.nuancemobility.net/NmspServlet/", headers, wr_buf, 100, wr_buf, len);
+	send_https("https://goertek-ncs-engusa-ssl.nuancemobility.net/NmspServlet/",
+			headers,
+			wr_buf,
+			100,
+			wr_buf,
+			len,
+			callback);
+	return 0;
+}
+
+int main()
+{
+	post(PCM_FILE, load_data);
 	return 0;
 }
