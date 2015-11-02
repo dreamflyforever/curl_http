@@ -223,7 +223,11 @@ int post(char *pcm_file, func callback)
 {
 	char wr_buf[MAX_BUF] = {0};
 	char buf[MAX_BUF] = {0};
-		
+	if ((pcm_file == NULL) && (callback == NULL)) {
+		printf("please confirm pcm file and callback exit\n");
+		return -1;
+	}
+
 	char fd_buf[1000000] = {0};
 	sprintf(buf, "--%s\r\n%s%s\r\n", boundary, head_data, request_data);
 	strcat(wr_buf, buf);
