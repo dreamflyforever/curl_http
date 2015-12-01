@@ -109,7 +109,7 @@ int send_https(const char *url,
 #if HEAD_KEEP
 	static const char *headerfilename = "head.out";  
 	FILE *headerfile;
-	headerfile = fopen(headerfilename,"wb");
+	headerfile = fopen(headerfilename, "wb");
 	if (headerfile == NULL) {
 		printf("over......\n");
 		return -1;
@@ -121,41 +121,33 @@ int send_https(const char *url,
 	curl_easy_setopt(curl,CURLOPT_WRITEHEADER, headerfile);
 #endif
 	ret = curl_easy_perform(curl);
+
 	if ( ret == 0 ) {
 		printf("success send\n");
 	} else {
 		switch(ret) {
 		case CURLE_COULDNT_CONNECT:
-			{
-				printf("ERROR:TimeOut can't connect to the host.\n");
-				error_code=ERROR_CURL_TIMEOUT;
-				break;
-			}
+			printf("ERROR:TimeOut can't connect to the host.\n");
+			error_code=ERROR_CURL_TIMEOUT;
+			break;
 		case CURLE_HTTP_RETURNED_ERROR:
-			{
-				printf("ERROR:HTTP return false.");
-				error_code=ERROR_CURL_HTTPFALSE;
-				break;
-			}
+			printf("ERROR:HTTP return false.");
+			error_code=ERROR_CURL_HTTPFALSE;
+			break;
 		case CURLE_SSL_ENGINE_INITFAILED:
-			{
-				printf("ERROR:SSL can't be initialized.");
-				error_code=ERROR_CURL_SSLINITFAILED;
-				break;
-			}
+			printf("ERROR:SSL can't be initialized.");
+			error_code=ERROR_CURL_SSLINITFAILED;
+			break;
 		case CURLE_COULDNT_RESOLVE_HOST:
-			{
-				printf("ERROR:SSL can't create ssl connection.");
-				error_code=ERROR_CURL_SSLINITFAILED;
-				break;
-			}
+			printf("ERROR:SSL can't create ssl connection.");
+			error_code=ERROR_CURL_SSLINITFAILED;
+			break;
 		default:
-			{
-				printf("ERROR:correspond failed.");
-				error_code=ERROR_FAILED_SEND;
-			}
+			printf("ERROR:correspond failed.");
+			error_code=ERROR_FAILED_SEND;
 		}
 	}
+
 #if HEAD_KEEP
 	fclose(headerfile);
 #endif
@@ -293,8 +285,8 @@ int post(char *pcm_file, func callback)
 	return 0;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-	post(PCM_FILE, load_data);
+	post(argv[1], load_data);
 	return 0;
 }
