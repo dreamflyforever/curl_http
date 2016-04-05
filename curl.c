@@ -232,9 +232,9 @@ int post(char *pcm_file, func callback)
 	int rc, num;
 	int len;
 	/*open file in the format of binary*/
-	FILE *fpin=fopen(pcm_file, "rb");
+	FILE *fpin = fopen(pcm_file, "rb");
 	if (fpin == NULL) {
-		printf("open error\n");
+		printf("open error, format: ./curl_post file\n");
 		return 0;
 	}
 
